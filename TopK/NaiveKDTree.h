@@ -14,6 +14,7 @@ private:
 	public:
 		uint32_t size;
 		T1 delimit;
+		T2 max_priority;
 		bool is_x;
 		KDTreeNode* left;
 		KDTreeNode* right;
@@ -120,6 +121,7 @@ private:
 	KDTreeNode* CreateNode(Node<T1, T2>* begin, Node<T1, T2>* end, bool is_x)
 	{
 		KDTreeNode* new_node;
+		T2 max_priority=std::numeric_limits<T2>::min();
 		int size = end - begin;
 		if (size == 0)
 		{
@@ -151,8 +153,13 @@ private:
 			std::sort(begin, end, [](const Node<T1, T2>& a, const Node<T1, T2>& b)
 			{
 				return a.priority > b.priority;
-			})
+			});
+			new_node->max_priority = begin->priority;
 			return new_node;
+		}
+		for (int i = 0; i < size; i++)
+		{
+			max_priority = max_priority > (begin + i)->priority ? max_priority : (begin + i)->priority;
 		}
 		if (is_x)
 		{
@@ -174,7 +181,8 @@ private:
 					std::sort(begin, end, [](const Node<T1, T2>& a, const Node<T1, T2>& b)
 					{
 						return a.priority > b.priority;
-					})
+					});
+					
 				}
 			}
 		}
@@ -198,10 +206,11 @@ private:
 					std::sort(begin, end, [](const Node<T1, T2>& a, const Node<T1, T2>& b)
 					{
 						return a.priority > b.priority;
-					})
+					});
 				}
 			}
 		}
+		new_node->max_priority = max_priority;
 		return new_node;
 	}
 public:
@@ -229,7 +238,7 @@ public:
 			return result;
 		}
 		result_queue_type result_queue;
-		recursive_search(lower, upper, k, head, &result_queue);
+		recursive_search(lower, upper, k, head, result_queue);
 		while (result_queue.size() != 0)
 		{
 			result.push_back(result_queue.top());
@@ -238,7 +247,7 @@ public:
 		std::reverse(result.begin(), result.end());
 		return result;
 	}
-	void recursive_search(Position<T1> lower, Position<T2> upper, uint32_t k,KDTreeNode* cur_node, result_queue_type* result_queue)
+	void recursive_search(Position<T1> lower, Position<T2> upper, uint32_t k,KDTreeNode* cur_node, result_queue_type& result_queue)
 	{
 		bool range_cross, x_cross, y_cross;
 		
@@ -246,6 +255,10 @@ public:
 		y_cross = !((cur_node->lower_bound.y > upper.y) || (cur_node->upper_bound.y < lower.y));
 		range_cross = x_cross&&y_cross;
 		if (!range_cross)
+		{
+			return;
+		}
+		if (result_queue.size() == k&&result_queue.top().priority > cur_node->max_priority)
 		{
 			return;
 		}
@@ -294,11 +307,11 @@ public:
 		{
 			return;
 		}
-		if (cur_node->left == nullptr)
+		if (cur_node->left != nullptr)
 		{
 			recursive_free(cur_node->left);
 		}
-		if (cur_node->right == nullptr)
+		if (cur_node->right != nullptr)
 		{
 			recursive_free(cur_node->right);
 		}

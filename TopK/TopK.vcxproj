@@ -149,6 +149,10 @@
     <ClInclude Include="NaiveKDTree.h" />
     <ClInclude Include="RangeTree.h" />
     <ClInclude Include="SearchContext.h" />
+    <ClInclude Include="test\DataGenerate.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="robust_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

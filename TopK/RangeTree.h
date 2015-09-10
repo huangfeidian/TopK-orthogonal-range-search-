@@ -26,6 +26,10 @@ private:
 		//just store the topk nodes in local nodes
 		Position<T1> lower_bound;
 		Position<T1> upper_bound;
+		RangeTreeNode()
+		{
+
+		}
 	};
 	RangeTreeNode* head;
 	const int min_split_size;
@@ -37,14 +41,14 @@ private:
 		RangeTreeNode* new_node = new RangeTreeNode();
 		std::nth_element(begin, begin + size / 2, end, xpos_cmp<T1, T2>);
 		T1 delimit = begin[size / 2].pos.x;
-		Node<T1, T2>* new_nth = std::partition(begin + size / 2 + 1, end, [](const Node<T1, T2>& b)
+		Node<T1, T2>* new_nth = std::partition(begin + size / 2 + 1, end, [=](const Node<T1, T2>& b)
 		{
 			return b.pos.x == delimit;
 		});
 		int new_size = new_nth - begin;
 		if (new_size == size)
 		{
-			new_nth = std::partition(begin, begin + size / 2 + 1, [](const Node<T1, T2>& b)
+			new_nth = std::partition(begin, begin + size / 2 + 1, [=](const Node<T1, T2>& b)
 			{
 				return b.pos.x <delimit;
 			});
@@ -56,7 +60,6 @@ private:
 		}
 		new_node->delimit = (*(new_nth - 1)).pos.x;
 		new_node->is_leaf = false;
-		new_node->is_x = true;
 		new_node->left = new_node->right = nullptr;
 		new_node->local_nodes = new Node<T1, T2>[size];;
 		new_node->size = size;
@@ -81,8 +84,8 @@ private:
 		{
 			return a.priority > b.priority;
 		});
-		new_node->left = CreateNode(begin, new_nth, );
-		new_node->right = CreateNode(new_nth, end, );
+		new_node->left = CreateNode(begin, new_nth );
+		new_node->right = CreateNode(new_nth, end );
 		return new_node;
 	}
 	RangeTreeNode* CreateLeaf(Node<T1, T2>* begin, Node<T1, T2>* end)
@@ -127,7 +130,7 @@ private:
 		}
 		if (size <= min_split_size)
 		{
-			return CreateLeaf(begin,end)
+			return CreateLeaf(begin, end);
 		}
 		new_node = split(begin, end);
 		if (new_node == nullptr)
@@ -144,7 +147,7 @@ public:
 	}
 	void CreateContext()
 	{
-		if (input_nodes.size() = 0)
+		if (input_nodes.size() == 0)
 		{
 			head = nullptr;
 		}
@@ -153,7 +156,7 @@ public:
 			head = CreateNode(&input_nodes[0], &input_nodes[input_nodes.size() - 1] + 1);
 		}
 	}
-	std::vector<Node<T1, T2>> TopkSearch(Position<T1> lower, Position<T2> upper, uint32_t k)
+	std::vector<Node<T1, T2>> TopkSearch(Position<T1> lower, Position<T1> upper, uint32_t k)
 	{
 		std::vector<Node<T1, T2>> result;
 		if (input_nodes.size() == 0 || k == 0)
@@ -188,48 +191,48 @@ public:
 				else
 				{
 					result_queue.pop();
-					result_queue.push(*(begin + i));
+					result_queue.push(*(cur_node->local_nodes + i));
 				}
 
 			}
 			else
 			{
-				result_queue.push(*(begin + i));
+				result_queue.push(*(cur_node->local_nodes + i));
 			}
 		}
 	}
-	void leaf_search(Position<T1> lower, Position<T2> upper, uint32_t k, RangeTreeNode* cur_node, result_queue_type& result_queue)
+	void leaf_search(Position<T1> lower, Position<T1> upper, uint32_t k, RangeTreeNode* cur_node, result_queue_type& result_queue)
 	{
 		for (int i = 0; i < cur_node->size; i++)
 		{
 			if (result_queue.size() == k)
 			{
-				if ((cur_node->local_nodes + i)->priority < result_queue.top().priority)
+				if ((cur_node->local_nodes+i)->priority < result_queue.top().priority)
 				{
 					break;
 				}
 				else
 				{
-					if ((cur_node->local_nodes + i)->x >= lower.x && (cur_node->local_nodes + i)->x <= upper.x &&
-						(cur_node->local_nodes + i)->y >= lower.y && (cur_node->local_nodes + i)->y <= upper.y)
+					if ((cur_node->local_nodes+i)->pos.x >= lower.x && (cur_node->local_nodes+i)->pos.x <= upper.x &&
+						(cur_node->local_nodes+i)->pos.y >= lower.y && (cur_node->local_nodes+i)->pos.y <= upper.y)
 					{
 						result_queue.pop();
-						result_queue.push(*(begin + i));
+						result_queue.push(*(cur_node->local_nodes + i));
 					}
 				}
 
 			}
 			else
 			{
-				if ((cur_node->local_nodes + i)->x >= lower.x && (cur_node->local_nodes + i)->x <= upper.x &&
-					(cur_node->local_nodes + i)->y >= lower.y && (cur_node->local_nodes + i)->y <= upper.y)
+				if ((cur_node->local_nodes+i)->pos.x >= lower.x && (cur_node->local_nodes+i)->pos.x <= upper.x &&
+					(cur_node->local_nodes+i)->pos.y >= lower.y && (cur_node->local_nodes+i)->pos.y <= upper.y)
 				{
-					result_queue.push(*(begin + i));
+					result_queue.push(*(cur_node->local_nodes + i));
 				}
 			}
 		}
 	}
-	void recursive_search(Position<T1> lower, Position<T2> upper, uint32_t k, RangeTreeNode* cur_node, result_queue_type& result_queue)
+	void recursive_search(Position<T1> lower, Position<T1> upper, uint32_t k, RangeTreeNode* cur_node, result_queue_type& result_queue)
 	{
 		bool range_cross, x_cross, y_cross;
 		bool range_inside, x_inside, y_inside;

@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="头文件\test">
+      <UniqueIdentifier>{1fe578d2-8d45-499b-9c81-c0d9053544b2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AvxLinearSearch.h">
@@ -39,5 +42,19 @@
     <ClInclude Include="SearchContext.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="FractionalTree.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RangeTree.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="test\DataGenerate.h">
+      <Filter>头文件\test</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="robust_test.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

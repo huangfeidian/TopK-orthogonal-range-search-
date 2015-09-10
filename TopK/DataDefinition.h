@@ -1,3 +1,5 @@
+#ifndef __H_DATADEFINITION_H__
+#define __H_DATADEFINITION_H__
 template <typename T1>
 class Position
 {
@@ -6,6 +8,10 @@ public:
 	T1 y;
 	Position(T1 in_x, T1 in_y)
 		:x(in_x), y(in_y)
+	{
+
+	}
+	Position()
 	{
 
 	}
@@ -35,6 +41,10 @@ public:
 		neg_x(-x);
 		neg_y(-y);
 	}
+	PackedPos()
+	{
+
+	}
 };
 template <typename T1, typename T2>
 class Node
@@ -44,6 +54,10 @@ public:
 	T2 priority;
 	Node(T1 in_x, T1 in_y, T2 in_priority)
 		:pos(in_x, in_y), priority(in_priority)
+	{
+
+	}
+	Node()
 	{
 
 	}
@@ -67,3 +81,4 @@ bool ypos_cmp(const Node<T1, T2>& a, const Node<T1,T2>& b)
 {
 	return a.pos.y < b.pos.y;
 }
+#endif

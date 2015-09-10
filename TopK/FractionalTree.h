@@ -26,14 +26,24 @@ private:
 		//just store the topk nodes in local nodes
 		Position<T1> lower_bound;
 		Position<T1> upper_bound;
+		uint32_t* cascade_index;
+		//the smallest(w.r.t. y) node index in left son node  that local_nodes[i].pos.y<left->local_nodes[cascade_index[i]]
+		// so that the small(w.r.t. y) node index in right son node is i-cascade_index[i]
+		// beware if some points have the same y  only the right most node's left index is right
+
 	};
 	FractionalTreeNode* head;
 	const int min_split_size;
 
-	FractionalTreeNode* split(Node<T1, T2>* begin, Node<T1, T2>* end)
+	FractionalTreeNode* split(Node<T1, T2>* origin_begin, Node<T1, T2>* origin_end)
 	{
+		Node<T1, T2>* begin;
+		Node<T1, T2>* end;
 		T2 max_priority = std::numeric_limits<T2>::min();
-		uint32_t size = end - begin;
+		uint32_t size = origin_end - origin_begin;
+		begin = new Node<T1, T2>[size];
+		std::copy(origin_begin, origin_end, begin);
+		end = begin + size;
 		FractionalTreeNode* new_node = new FractionalTreeNode();
 		std::nth_element(begin, begin + size / 2, end, xpos_cmp<T1, T2>);
 		T1 delimit = begin[size / 2].pos.x;
@@ -50,28 +60,46 @@ private:
 			});
 			if (new_nth == begin)
 			{
+				delete [] begin;
 				delete new_node;
 				return nullptr;
 			}
 		}
+		new_size = new_nth - begin;
 		new_node->delimit = (*(new_nth - 1)).pos.x;
 		new_node->is_leaf = false;
 		new_node->is_x = true;
 		new_node->left = new_node->right = nullptr;
 		new_node->local_nodes = new Node<T1, T2>[size];;
 		new_node->size = size;
+		new_node->cascade_index = new uint32_t[size];
 		T1 lower_x, upper_x, lower_y, upper_y;
 		upper_x = upper_y = std::numeric_limits<T1>::min();
 		lower_x = lower_y = std::numeric_limits<T1>::max();
+		uint32_t left_index, right_index;
+		left_index = right_index = 0;
 		for (int i = 0; i < size; i++)
 		{
-			lower_x = lower_x >(begin + i)->pos.x ? (begin + i)->pos.x : lower_x;
-			lower_y = lower_y > (begin + i)->pos.y ? (begin + i)->pos.y : lower_y;
-			upper_x = upper_x > (begin + i)->pos.x ? upper_x : (begin + i)->pos.x;
-			upper_y = upper_y > (begin + i)->pos.y ? upper_y : (begin + i)->pos.y;
-			max_priority = max_priority > begin[i].priority ? max_priority : begin[i].priority;
-			new_node->local_nodes[i] = begin[i];
+			lower_x = lower_x >(origin_begin + i)->pos.x ? (origin_begin + i)->pos.x : lower_x;
+			lower_y = lower_y > (origin_begin + i)->pos.y ? (origin_begin + i)->pos.y : lower_y;
+			upper_x = upper_x > (origin_begin + i)->pos.x ? upper_x : (origin_begin + i)->pos.x;
+			upper_y = upper_y > (origin_begin + i)->pos.y ? upper_y : (origin_begin + i)->pos.y;
+			max_priority = max_priority > origin_begin[i].priority ? max_priority : origin_begin[i].priority;
+			if ((origin_begin + i)->pos.x <= new_node->delimit)
+			{
+				origin_begin[left_index] = origin_begin[i];
+				left_index++;
+			}
+			else
+			{
+				begin[right_index] = origin_begin[i];
+				right_index++;
+			}
+			new_node->cascade_index[i] = left_index;
+			new_node->local_nodes[i] = origin_begin[i];
 		}
+		std::copy(begin, begin + right_index, origin_begin + left_index);
+		delete [] begin;
 		new_node->lower_bound.x = lower_x;
 		new_node->upper_bound.x = upper_x;
 		new_node->lower_bound.y = lower_y;
@@ -81,8 +109,8 @@ private:
 		{
 			return a.priority > b.priority;
 		});
-		new_node->left = CreateNode(begin, new_nth, );
-		new_node->right = CreateNode(new_nth, end, );
+		new_node->left = CreateNode(origin_begin, origin_begin+new_size );
+		new_node->right = CreateNode(origin_begin + new_size, origin_end);
 		return new_node;
 	}
 	FractionalTreeNode* CreateLeaf(Node<T1, T2>* begin, Node<T1, T2>* end)
@@ -103,7 +131,7 @@ private:
 			lower_y = lower_y > (begin + i)->pos.y ? (begin + i)->pos.y : lower_y;
 			upper_x = upper_x > (begin + i)->pos.x ? upper_x : (begin + i)->pos.x;
 			upper_y = upper_y > (begin + i)->pos.y ? upper_y : (begin + i)->pos.y;
-			new_node->local_nodes[i] = *(begin + i);
+			new_node->local_nodes[i] = begin[i];
 		}
 		new_node->lower_bound.x = lower_x;
 		new_node->upper_bound.x = upper_x;
@@ -151,6 +179,7 @@ public:
 		else
 		{
 			head = CreateNode(&input_nodes[0], &input_nodes[input_nodes.size() - 1] + 1);
+			std::sort(&input_nodes[0], &input_nodes[input_nodes.size() - 1] + 1, ypos_cmp<T1, T2>);
 		}
 	}
 	std::vector<Node<T1, T2>> TopkSearch(Position<T1> lower, Position<T2> upper, uint32_t k)
@@ -161,7 +190,17 @@ public:
 			return result;
 		}
 		result_queue_type result_queue;
-		recursive_search(lower, upper, k, head, result_queue);
+		auto upper_bound = std::upper_bound(input_nodes.begin(), input_nodes.end(), upper.y, [](const Node<T1, T2>& a, const T1& b)
+		{
+			return a.pos.y < b;
+		});
+		uint32_t upper_bound_index = std::distance(input_nodes.begin(), upper_bound);
+		auto lower_bound = std::lower_bound(input_nodes.begin(), input_nodes.end(), lower.y, [](const Node<T1, T2>& a, const T1& b)
+		{
+			return a.pos.y < b;
+		});
+		uint32_t lower_bound_index = std::distance(input_nodes.begin(), lower_bound);
+		recursive_search(lower, upper, k, head, result_queue,make_pair(lower_bound_index,upper_bound_index));
 		while (result_queue.size() != 0)
 		{
 			result.push_back(result_queue.top());
@@ -229,10 +268,17 @@ public:
 			}
 		}
 	}
-	void recursive_search(Position<T1> lower, Position<T2> upper, uint32_t k, FractionalTreeNode* cur_node, result_queue_type& result_queue)
+	void recursive_search(Position<T1> lower, Position<T2> upper, uint32_t k, FractionalTreeNode* cur_node, result_queue_type& result_queue,pair<uint32_t,uint32_t> cascading_index)
 	{
 		bool range_cross, x_cross, y_cross;
 		bool range_inside, x_inside, y_inside;
+		uint32_t begin_index, end_index;
+		begin_index = cascading_index.first;
+		end_indx = cascading_index.second;
+		if (begin_index >= end_index)
+		{
+			return;
+		}
 		x_cross = !((cur_node->lower_bound.x > upper.x) || (cur_node->upper_bound.x < lower.x));
 		y_cross = !((cur_node->lower_bound.y > upper.y) || (cur_node->upper_bound.y < lower.y));
 		range_cross = x_cross&&y_cross;
@@ -255,8 +301,10 @@ public:
 			}
 			else
 			{
-				recursive_search(lower, upper, k, cur_node->left, result_queue);
-				recursive_search(lower, upper, k, cur_node->right, result_queue);
+				recursive_search(lower, upper, k, cur_node->left, result_queue,
+					make_pair( cur_node->cascade_index[begin_index], cur_node->cascade_index[end_index-1])+1);
+				recursive_search(lower, upper, k, cur_node->right, result_queue,
+					make_pair(begin_index-cur_node->cascade_index[begin_index], end_index-cur_node->cascade_index[end_index-1])-1);
 			}
 		}
 

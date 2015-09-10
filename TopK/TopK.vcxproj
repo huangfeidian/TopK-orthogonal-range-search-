@@ -143,9 +143,11 @@
     <ClInclude Include="AvxLinearSearchDetach.h" />
     <ClInclude Include="AvxLinearSearchPacked.h" />
     <ClInclude Include="DataDefinition.h" />
+    <ClInclude Include="FractionalTree.h" />
     <ClInclude Include="LinearAvxSearch_1.h" />
     <ClInclude Include="LinearSearch.h" />
     <ClInclude Include="NaiveKDTree.h" />
+    <ClInclude Include="RangeTree.h" />
     <ClInclude Include="SearchContext.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

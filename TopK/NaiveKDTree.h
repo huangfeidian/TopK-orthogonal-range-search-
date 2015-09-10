@@ -28,7 +28,8 @@ private:
 	
 	KDTreeNode* split_x(Node<T1, T2>* begin, Node<T1, T2>* end)
 	{
-		KDTreeNode<T1>* new_node = new KDTreeNode();
+		uint32_t size = end - begin;
+		KDTreeNode* new_node = new KDTreeNode();
 		std::nth_element(begin, begin + size / 2, end, xpos_cmp<T1, T2>);
 		T1 delimit = begin[size / 2].pos.x;
 		Node<T1, T2>* new_nth = std::partition(begin + size / 2 + 1, end, [](const Node<T1, T2>& b)
@@ -74,7 +75,8 @@ private:
 	}
 	KDTreeNode* split_y(Node<T1, T2>* begin, Node<T1, T2>* end)
 	{
-		KDTreeNode<T1>* new_node = new KDTreeNode();
+		uint32_t size = end - begin;
+		KDTreeNode* new_node = new KDTreeNode();
 		std::nth_element(begin, begin + size / 2, end, ypos_cmp<T1, T2>);
 		T1 delimit = begin[size / 2].pos.y;
 		Node<T1, T2>* new_nth = std::partition(begin + size / 2 + 1, end, [](const Node<T1, T2>& b)
@@ -247,6 +249,65 @@ public:
 		std::reverse(result.begin(), result.end());
 		return result;
 	}
+	void inside_search(uint32_t k, RangeTreeNode* cur_node, result_queue_type& result_queue)
+	{
+		if (result_queue.size() == k&&result_queue.top().priority > cur_node->max_priority)
+		{
+			return;
+		}
+
+		for (int i = 0; i < cur_node->size; i++)
+		{
+			if (result_queue.size() == k)
+			{
+				if ((cur_node->local_nodes + i)->priority < result_queue.top().priority)
+				{
+					break;
+				}
+				else
+				{
+					result_queue.pop();
+					result_queue.push(*(begin + i));
+				}
+
+			}
+			else
+			{
+				result_queue.push(*(begin + i));
+			}
+		}
+	}
+	void leaf_search(Position<T1> lower, Position<T2> upper, uint32_t k, RangeTreeNode* cur_node, result_queue_type& result_queue)
+	{
+		for (int i = 0; i < cur_node->size; i++)
+		{
+			if (result_queue.size() == k)
+			{
+				if ((cur_node->local_nodes + i)->priority < result_queue.top().priority)
+				{
+					break;
+				}
+				else
+				{
+					if ((cur_node->local_nodes + i)->x >= lower.x && (cur_node->local_nodes + i)->x <= upper.x &&
+						(cur_node->local_nodes + i)->y >= lower.y && (cur_node->local_nodes + i)->y <= upper.y)
+					{
+						result_queue.pop();
+						result_queue.push(*(begin + i));
+					}
+				}
+
+			}
+			else
+			{
+				if ((cur_node->local_nodes + i)->x >= lower.x && (cur_node->local_nodes + i)->x <= upper.x &&
+					(cur_node->local_nodes + i)->y >= lower.y && (cur_node->local_nodes + i)->y <= upper.y)
+				{
+					result_queue.push(*(begin + i));
+				}
+			}
+		}
+	}
 	void recursive_search(Position<T1> lower, Position<T2> upper, uint32_t k,KDTreeNode* cur_node, result_queue_type& result_queue)
 	{
 		bool range_cross, x_cross, y_cross;
@@ -264,41 +325,23 @@ public:
 		}
 		if (cur_node->is_leaf)
 		{
-			for (int i = 0; i < cur_node->size; i++)
+			bool range_inside, x_inside, y_inside;
+			x_inside = ((cur_node->lower_bound.x >= lower.x) && (cur_node->upper_bound.x <= upper.x));
+			y_inside = ((cur_node->lower_bound.y >= lower.y) && (cur_node->upper_bound.y <= upper.y));
+			range_inside = x_inside&&y_inside;
+			if (range_inside)
 			{
-
-				if ((cur_node->local_nodes + i).priority < result_queue.top().priority)
-				{
-					if (result_queue.size() == k)
-					{
-						break;
-					}
-				}
-				else
-				{
-					if ((cur_node->local_nodes + i)->x >= lower.x && (cur_node->local_nodes + i)->x <= upper.x &&
-						(cur_node->local_nodes + i)->y >= lower.y && (cur_node->local_nodes + i)->y <= upper.y)
-					{
-						if (result_queue.size() == k)
-						{
-							result_queue.pop();
-							
-						}
-						result_queue.push(*(begin + i));
-					}
-				}
+				inside_search(k, cur_node, result_queue);
+			}
+			else
+			{
+				leaf_search(lower, upper, k, cur_node, result_queue);
 			}
 		}
 		else
 		{
-			if (cur_node->left != nullptr)
-			{
-				recursive_search(lower, upper, k, cur_node->left, result_queue);
-			}
-			if (cur_node->right != nullptr)
-			{
-				recursive_search(lower, upper, k, cur_node->right, result_queue);
-			}
+			recursive_search(lower, upper, k, cur_node->left, result_queue);
+			recursive_search(lower, upper, k, cur_node->right, result_queue);
 		}
 	}
 	void recursive_free(KDTreeNode* cur_node)

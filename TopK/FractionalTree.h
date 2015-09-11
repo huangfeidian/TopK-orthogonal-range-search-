@@ -302,10 +302,10 @@ public:
 			}
 			else
 			{
-				recursive_search(lower, upper, k, cur_node->left, result_queue,
-					make_pair( cur_node->cascade_index[begin_index], cur_node->cascade_index[end_index-1]+1));
-				recursive_search(lower, upper, k, cur_node->right, result_queue,
-					make_pair(begin_index-cur_node->cascade_index[begin_index], end_index-cur_node->cascade_index[end_index-1]-1));
+				recursive_search(lower, upper, k, cur_node->left, result_queue,make_pair( cur_node->cascade_index[begin_index], 
+					std::min(cur_node->left->size,cur_node->cascade_index[end_index-1]+1)));
+				recursive_search(lower, upper, k, cur_node->right, result_queue,make_pair(begin_index-cur_node->cascade_index[begin_index], 
+					std::min(cur_node->right->size,end_index-cur_node->cascade_index[end_index-1]-1)));
 			}
 		}
 

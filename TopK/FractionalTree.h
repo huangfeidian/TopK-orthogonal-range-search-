@@ -4,7 +4,7 @@
 #include <queue>
 using std::pair;
 using std::make_pair;
-
+#define MORE_DEBUG 0
 template <typename T1, typename T2>
 class FractionalTree :public SearchContext<T1, T2>
 {
@@ -26,9 +26,14 @@ private:
 		//just store the topk nodes in local nodes
 		Position<T1> lower_bound;
 		Position<T1> upper_bound;
-		uint32_t* cascade_index;
-		//the smallest(w.r.t. y) node index in left son node  that local_nodes[i].pos.y<left->local_nodes[cascade_index[i]]
-		// so that the small(w.r.t. y) node index in right son node is i-cascade_index[i]
+		uint32_t* left_cascade_index;
+		//uint32_t* right_cascade_index; 
+		//we dont need right_cascade_index here because left_cascade_index[i]+right_cascade_index[i]=i;
+#if MORE_DEBUG
+		Node<T1, T2>* y_nodes;
+#endif
+		//the smallest(w.r.t. y) node index in left son node  that local_nodes[i].pos.y<left->local_nodes[left_cascade_index[i]]
+		// so that the small(w.r.t. y) node index in right son node is i-left_cascade_index[i]
 		// beware if some points have the same y  only the right most node's left index is right
 
 	};
@@ -72,7 +77,11 @@ private:
 		new_node->left = new_node->right = nullptr;
 		new_node->local_nodes = new Node<T1, T2>[size];;
 		new_node->size = size;
-		new_node->cascade_index = new uint32_t[size];
+		new_node->left_cascade_index = new uint32_t[size];
+		
+#if MORE_DEBUG
+		new_node->y_nodes = new Node<T1, T2>[size];
+#endif
 		T1 lower_x, upper_x, lower_y, upper_y;
 		upper_x = upper_y = std::numeric_limits<T1>::min();
 		lower_x = lower_y = std::numeric_limits<T1>::max();
@@ -80,6 +89,7 @@ private:
 		left_index = right_index = 0;
 		for (int i = 0; i < size; i++)
 		{
+			new_node->left_cascade_index[i] = left_index;
 			lower_x = lower_x >(origin_begin + i)->pos.x ? (origin_begin + i)->pos.x : lower_x;
 			lower_y = lower_y > (origin_begin + i)->pos.y ? (origin_begin + i)->pos.y : lower_y;
 			upper_x = upper_x > (origin_begin + i)->pos.x ? upper_x : (origin_begin + i)->pos.x;
@@ -95,8 +105,11 @@ private:
 				begin[right_index] = origin_begin[i];
 				right_index++;
 			}
-			new_node->cascade_index[i] = left_index;
+			
 			new_node->local_nodes[i] = origin_begin[i];
+#if MORE_DEBUG
+			new_node->y_nodes[i] = origin_begin[i];
+#endif
 		}
 		std::copy(begin, begin + right_index, origin_begin + left_index);
 		delete [] begin;
@@ -122,7 +135,10 @@ private:
 		new_node->is_leaf = true;
 		new_node->size = size;
 		new_node->local_nodes = new Node<T1, T2>[size];
-		new_node->cascade_index = nullptr;
+#if MORE_DEBUG
+		new_node->y_nodes = new Node<T1, T2>[size];
+#endif
+		new_node->left_cascade_index = nullptr;
 		T1 lower_x, upper_x, lower_y, upper_y;
 		upper_x = upper_y = std::numeric_limits<T1>::min();
 		lower_x = lower_y = std::numeric_limits<T1>::max();
@@ -133,6 +149,9 @@ private:
 			upper_x = upper_x > (begin + i)->pos.x ? upper_x : (begin + i)->pos.x;
 			upper_y = upper_y > (begin + i)->pos.y ? upper_y : (begin + i)->pos.y;
 			new_node->local_nodes[i] = begin[i];
+#if MORE_DEBUG
+			new_node->y_nodes[i] = begin[i];
+#endif
 		}
 		new_node->lower_bound.x = lower_x;
 		new_node->upper_bound.x = upper_x;
@@ -179,6 +198,7 @@ public:
 		}
 		else
 		{
+			std::sort(&input_nodes[0], &input_nodes[input_nodes.size() - 1] + 1, ypos_cmp<T1, T2>);
 			head = CreateNode(&input_nodes[0], &input_nodes[input_nodes.size() - 1] + 1);
 			std::sort(&input_nodes[0], &input_nodes[input_nodes.size() - 1] + 1, ypos_cmp<T1, T2>);
 		}
@@ -302,10 +322,11 @@ public:
 			}
 			else
 			{
-				recursive_search(lower, upper, k, cur_node->left, result_queue,make_pair( cur_node->cascade_index[begin_index], 
-					std::min(cur_node->left->size,cur_node->cascade_index[end_index-1]+1)));
-				recursive_search(lower, upper, k, cur_node->right, result_queue,make_pair(begin_index-cur_node->cascade_index[begin_index], 
-					std::min(cur_node->right->size,end_index-cur_node->cascade_index[end_index-1])));
+				recursive_search(lower, upper, k, cur_node->left, result_queue, make_pair(cur_node->left_cascade_index[begin_index],
+					end_index == cur_node->size ? cur_node->left->size : cur_node->left_cascade_index[end_index]));
+					
+				recursive_search(lower, upper, k, cur_node->right, result_queue, make_pair(begin_index-cur_node->left_cascade_index[begin_index], 
+					end_index == cur_node->size ? cur_node->right->size : end_index-cur_node->left_cascade_index[end_index]));
 			}
 		}
 
@@ -325,9 +346,13 @@ public:
 			recursive_free(cur_node->right);
 		}
 		delete [] cur_node->local_nodes;
-		if (cur_node->is_leaf)
+#if MORE_DEBUG
+		delete [] cur_node->y_nodes;
+#endif
+		if (!cur_node->is_leaf)
 		{
-			delete [] cur_node->cascade_index;
+			delete [] cur_node->left_cascade_index;
+			
 		}
 		delete cur_node;
 	}

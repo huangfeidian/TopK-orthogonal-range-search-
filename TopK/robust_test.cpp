@@ -11,12 +11,12 @@ int main()
 
 	vector<Node<double, uint32_t>>  temp_data;
 	vector<pair<Position<double>, Position<double>>> temp_query;
-	temp_data = generate__data<double>(100000, 100001);
+	temp_data = generate__data<double>(100000, 101);
 	temp_query = generate_query<double>(100000, 1001);
-	LinearSearch<double, uint32_t> ls(&temp_data[0], &temp_data[100000]);
-	NaiveKDTree<double, uint32_t> kd(&temp_data[0], &temp_data[100000], 32);
-	RangeTree<double, uint32_t> rt(&temp_data[0], &temp_data[100000], 32);
-	FractionalTree<double, uint32_t> ft(&temp_data[0], &temp_data[100000], 32);
+	LinearSearch<double, uint32_t> ls(&temp_data[0], &temp_data[100]);
+	NaiveKDTree<double, uint32_t> kd(&temp_data[0], &temp_data[100], 32);
+	RangeTree<double, uint32_t> rt(&temp_data[0], &temp_data[100], 32);
+	FractionalTree<double, uint32_t> ft(&temp_data[0], &temp_data[100], 32);
 	ls.CreateContext();
 	kd.CreateContext();
 	rt.CreateContext();

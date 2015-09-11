@@ -3,7 +3,8 @@
 #include "NaiveKDTree.h"
 #include "RangeTree.h"
 #include "FractionalTree.h"
-
+#include <iostream>
+#include <assert.h>
 int main()
 {
 	
@@ -20,6 +21,7 @@ int main()
 	kd.CreateContext();
 	rt.CreateContext();
 	ft.CreateContext();
+	std::cout << "Context completed" << std::endl;
 	for (int i = 0; i < 1000; i++)
 	{
 		vector<Node<double, uint32_t>> result_1, result_2, result_3, result_4;
@@ -27,6 +29,17 @@ int main()
 		result_2 = kd.TopkSearch(temp_query[i].first, temp_query[i].second, 20);
 		result_3 = rt.TopkSearch(temp_query[i].first, temp_query[i].second, 20);
 		result_4 = ft.TopkSearch(temp_query[i].first, temp_query[i].second, 20);
+		assert(result_1.size() == result_2.size());
+		assert(result_2.size() == result_3.size());
+		assert(result_3.size() == result_4.size());
+		int size = result_1.size();
+		for (int i = 0; i < size; i++)
+		{
+			assert(result_1[i] == result_2[i]);
+			assert(result_2[i] == result_3[i]);
+			assert(result_3[i] == result_4[i]);
+			
+		}
 	}
 
 	

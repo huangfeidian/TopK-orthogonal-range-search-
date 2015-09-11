@@ -11,6 +11,10 @@ public:
 	{
 
 	}
+	bool operator==(const Position<T1>& a)
+	{
+		return x == a.x&&y == a.y;
+	}
 	Position()
 	{
 
@@ -60,6 +64,10 @@ public:
 	Node()
 	{
 
+	}
+	bool operator==(const Node<T1, T2>& a)
+	{
+		return priority == a.priority&&pos == a.pos;
 	}
 };
 template <typename T1, typename T2>

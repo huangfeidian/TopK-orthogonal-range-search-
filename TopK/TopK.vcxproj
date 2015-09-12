@@ -142,6 +142,7 @@
     <ClInclude Include="AvxLinearSearch.h" />
     <ClInclude Include="AvxLinearSearchDetach.h" />
     <ClInclude Include="AvxLinearSearchPacked.h" />
+    <ClInclude Include="CascadeLinear.h" />
     <ClInclude Include="DataDefinition.h" />
     <ClInclude Include="FractionalTree.h" />
     <ClInclude Include="LinearAvxSearch_1.h" />

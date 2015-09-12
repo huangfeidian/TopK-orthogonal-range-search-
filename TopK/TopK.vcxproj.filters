@@ -51,6 +51,9 @@
     <ClInclude Include="test\DataGenerate.h">
       <Filter>头文件\test</Filter>
     </ClInclude>
+    <ClInclude Include="CascadeLinear.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="robust_test.cpp">

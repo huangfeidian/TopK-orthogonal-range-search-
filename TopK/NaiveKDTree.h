@@ -5,7 +5,7 @@ using std::pair;
 using std::make_pair;
 
 template <typename T1,typename T2>
-class NaiveKDTree:public SearchContext<T1,T2>
+class KDTreeSearch:public SearchContext<T1,T2>
 {
 private:
 	using result_queue_type = std::priority_queue<Node<T1, T2>, std::vector<Node<T1, T2>>, PriorityCmp<T1, T2>>;
@@ -100,7 +100,7 @@ private:
 				return nullptr;
 			}
 		}
-		new_node->delimit = (*(new_nth - 1)).pos.x;
+		new_node->delimit = (*(new_nth - 1)).pos.y;
 		new_node->is_leaf = false;
 		new_node->is_x = false;
 		new_node->left = new_node->right = nullptr;
@@ -120,8 +120,8 @@ private:
 		new_node->upper_bound.x = upper_x;
 		new_node->lower_bound.y = lower_y;
 		new_node->upper_bound.y = upper_y;
-		new_node->left = CreateNode(begin, new_nth, false);
-		new_node->right = CreateNode(new_nth, end, false);
+		new_node->left = CreateNode(begin, new_nth, true);
+		new_node->right = CreateNode(new_nth, end, true);
 		return new_node;
 	}
 	KDTreeNode* CreateNode(Node<T1, T2>* begin, Node<T1, T2>* end, bool is_x)
@@ -220,7 +220,7 @@ private:
 		return new_node;
 	}
 public:
-	NaiveKDTree(const Node<T1, T2>* begin, const Node<T1, T2>* end,int in_min_split_size)
+	KDTreeSearch(const Node<T1, T2>* begin, const Node<T1, T2>* end,int in_min_split_size)
 		:SearchContext<T1, T2>(begin, end), min_split_size(in_min_split_size)
 	{
 		
@@ -364,7 +364,7 @@ public:
 		}
 		delete cur_node;
 	}
-	~NaiveKDTree()
+	~KDTreeSearch()
 	{
 		recursive_free(head);
 	}

@@ -54,6 +54,9 @@
     <ClInclude Include="CascadeLinear.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="PrioritySearchTree.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="robust_test.cpp">

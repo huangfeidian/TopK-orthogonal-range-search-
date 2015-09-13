@@ -130,6 +130,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -145,7 +146,6 @@
     <ClInclude Include="CascadeLinear.h" />
     <ClInclude Include="DataDefinition.h" />
     <ClInclude Include="FractionalTree.h" />
-    <ClInclude Include="LinearAvxSearch_1.h" />
     <ClInclude Include="LinearSearch.h" />
     <ClInclude Include="NaiveKDTree.h" />
     <ClInclude Include="PrioritySearchTree.h" />

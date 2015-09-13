@@ -21,8 +21,8 @@ public:
 				return true;
 			}
 		});
-		all_x = _mm_malloc(sizeof(T1)*input_nodes.size(), 32);
-		all_y = _mm_malloc(sizeof(T1)*input_nodes.size(), 32);
+		all_x = reinterpret_cast<T1*>(_mm_malloc(sizeof(T1)*input_nodes.size(), 32));
+		all_y = reinterpret_cast<T1*>(_mm_malloc(sizeof(T1)*input_nodes.size(), 32));
 		for (int i = 0; i < input_nodes.size(); i++)
 		{
 			all_x[i] = input_nodes[i].pos.x;

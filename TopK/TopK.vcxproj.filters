@@ -30,9 +30,6 @@
     <ClInclude Include="DataDefinition.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="LinearAvxSearch_1.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="LinearSearch.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -59,10 +56,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="robust_test.cpp">
+    <ClCompile Include="speed_test.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="speed_test.cpp">
+    <ClCompile Include="robust_test.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

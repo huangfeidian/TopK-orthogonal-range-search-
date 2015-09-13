@@ -15,10 +15,7 @@ public:
 	{
 		std::sort(input_nodes.begin(), input_nodes.end(), [](const Node<T1, T2>& a, const Node<T1, T2>& b)
 		{
-			if (a.priority > b.priority)
-			{
-				return true;
-			}
+			return a.priority > b.priority;
 		});
 		void* memory_pool= _mm_malloc(sizeof(T1)*input_nodes.size()*4, 32);
 		all_pos = new(memory_pool) PackedPos<T1>[input_nodes.size()];

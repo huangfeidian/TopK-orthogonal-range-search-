@@ -1,3 +1,6 @@
+
+#ifndef __H_AVXLINEAR_H__
+#define __H_AVXLINEAR_H__
 #include <immintrin.h>
 #include <stdint.h>
 #include "DataDefinition.h"
@@ -187,6 +190,7 @@ std::vector<uint32_t> topk_search_detail<float>(const PackedPos<float>* all_pos,
 			}
 		}
 	}
+	return result;
 }
 template<>
 std::vector<uint32_t> topk_search_detail<double>(const PackedPos<double>* all_pos, uint32_t size,
@@ -214,4 +218,6 @@ std::vector<uint32_t> topk_search_detail<double>(const PackedPos<double>* all_po
 			}
 		}
 	}
+	return result;
 }
+#endif

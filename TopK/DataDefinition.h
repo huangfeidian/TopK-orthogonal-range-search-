@@ -42,8 +42,8 @@ public:
 	PackedPos(T1 in_x, T1 in_y)
 		:x(in_x), y(in_y)
 	{
-		neg_x(-x);
-		neg_y(-y);
+		neg_x=-1*x;
+		neg_y=-1*y;
 	}
 	PackedPos()
 	{

@@ -13,7 +13,6 @@ private:
 	{
 	public:
 		uint32_t size;
-		T2 max_priority;
 		bool is_x;
 		PSTreeNode* left;
 		PSTreeNode* right;
@@ -64,7 +63,6 @@ private:
 		{
 			return a.priority > b.priority;
 		});
-		new_node->max_priority = begin->priority;
 		return new_node;
 	}
 	PSTreeNode* CreateNode(Node<T1, T2>* begin, Node<T1, T2>* end, bool is_x)
@@ -267,7 +265,7 @@ public:
 			{
 				continue;
 			}
-			if (result_queue.size() == k&&result_queue.top().priority > cur_node->max_priority)
+			if (result_queue.size() == k&&result_queue.top().priority > cur_node->local_nodes[0].priority)
 			{
 				continue;
 			}

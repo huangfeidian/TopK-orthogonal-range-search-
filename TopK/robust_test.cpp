@@ -32,8 +32,8 @@ int main()
 	{
 		bool debug_need=false;
 		vector<Node<double, uint32_t>> result_1, result_2, result_3, result_4,result_5,result_6;
-		result_1 = ls.TopkSearch(temp_query[i].first, temp_query[i].second, 20);
-		result_6 = ps.TopkSearch(temp_query[i].first, temp_query[i].second, 20);
+		result_1 = ls.TopkSearch(temp_query[i].first, temp_query[i].second, 40);
+		result_6 = ps.TopkSearch(temp_query[i].first, temp_query[i].second, 40);
 		//assert(result_6.size() != result_1.size());
 		int size = result_1.size();
 		if (result_6.size() != result_1.size())
@@ -48,7 +48,7 @@ int main()
 			{
 				std::cout << result_6[j].priority << " ";
 			}
-			result_6 = ps.TopkSearch(temp_query[i].first, temp_query[i].second, 20);
+			result_6 = ps.TopkSearch(temp_query[i].first, temp_query[i].second, 40);
 			std::cout << std::endl;
 			exit(1);
 		}
@@ -70,7 +70,7 @@ int main()
 					std::cout << result_6[j].priority << " ";
 				}
 				std::cout << std::endl;
-				result_6 = ps.TopkSearch(temp_query[i].first, temp_query[i].second, 20);
+				result_6 = ps.TopkSearch(temp_query[i].first, temp_query[i].second, 40);
 				exit(1);
 			}
 		}

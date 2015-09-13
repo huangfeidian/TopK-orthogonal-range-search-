@@ -13,7 +13,6 @@ private:
 	{
 	public:
 		uint32_t size;
-		T1 delimit;
 		T2 max_priority;
 		bool is_x;
 		PSTreeNode* left;
@@ -29,67 +28,6 @@ private:
 	};
 	PSTreeNode* head;
 	const int min_split_size;
-
-	bool split_x(Node<T1, T2>* begin, Node<T1, T2>* end, PSTreeNode* new_node)
-	{
-		uint32_t size = end - begin;
-		std::nth_element(begin, begin + size / 2, end, xpos_cmp<T1, T2>);
-		T1 delimit = begin[size / 2].pos.x;
-		Node<T1, T2>* new_nth = std::partition(begin + size / 2 + 1, end, [=](const Node<T1, T2>& b)
-		{
-			return b.pos.x == delimit;
-		});
-		int new_size = new_nth - begin;
-		if (new_size == size)
-		{
-			new_nth = std::partition(begin, begin + size / 2 + 1, [=](const Node<T1, T2>& b)
-			{
-				return b.pos.x <delimit;
-			});
-			if (new_nth == begin)
-			{
-				return false;
-			}
-		}
-		new_node->delimit = (*(new_nth - 1)).pos.x;
-		new_node->is_leaf = false;
-		new_node->is_x = true;
-		new_node->left = new_node->right = nullptr;
-		new_node->size = min_split_size;
-		new_node->left = CreateNode(begin, new_nth, false);
-		new_node->right = CreateNode(new_nth, end, false);
-		return true;
-	}
-	bool split_y(Node<T1, T2>* begin, Node<T1, T2>* end, PSTreeNode* new_node)
-	{
-		uint32_t size =end-begin;
-		std::nth_element(begin, begin + size / 2, end, ypos_cmp<T1, T2>);
-		T1 delimit = begin[size / 2].pos.y;
-		Node<T1, T2>* new_nth = std::partition(begin + size / 2 + 1, end, [=](const Node<T1, T2>& b)
-		{
-			return b.pos.y == delimit;
-		});
-		uint32_t new_size = new_nth - begin;
-		if (new_size == size)
-		{
-			new_nth = std::partition(begin, begin + size / 2 + 1, [=](const Node<T1, T2>& b)
-			{
-				return b.pos.y <delimit;
-			});
-			if (new_nth == begin)
-			{
-				return false;
-			}
-		}
-		new_node->delimit = (*(new_nth - 1)).pos.y;
-		new_node->is_leaf = false;
-		new_node->is_x = false;
-		new_node->left = new_node->right = nullptr;
-		new_node->size = min_split_size;
-		new_node->left = CreateNode(begin, new_nth, true);
-		new_node->right = CreateNode(new_nth, end, true);
-		return true;
-	}
 	PSTreeNode* CreateLeaf(Node<T1, T2>* begin, Node<T1, T2>* end)
 	{
 		PSTreeNode* new_node;
@@ -99,7 +37,6 @@ private:
 		new_node->is_leaf = true;
 		new_node->is_x = true;
 		new_node->size = size;
-		new_node->delimit = begin->pos.x;
 		new_node->local_nodes = begin;
 		T1 lower_x, upper_x, lower_y, upper_y;
 		upper_x = upper_y = std::numeric_limits<T1>::min();
@@ -130,7 +67,7 @@ private:
 		{
 			return nullptr;
 		}
-		if (size <= min_split_size)
+		if (size <= 2*min_split_size)
 		{
 			new_node = CreateLeaf(begin, end);
 			return new_node;
@@ -156,31 +93,25 @@ private:
 		{
 			return a.priority > b.priority;
 		});
+		std::sort(begin, begin + min_split_size, [](const Node<T1, T2>& a, const Node<T1, T2>& b)
+		{
+			return a.priority > b.priority;
+		});
 		new_node->max_priority = begin[0].priority;
+		begin += min_split_size;
+		size = end - begin;
+		new_node->is_leaf = false;
+		new_node->is_x = is_x;
 		if (is_x)
 		{
-			if (!split_x(begin+min_split_size, end, new_node))
-			{
-				if (!split_y(begin+min_split_size, end,new_node))
-				{
-					delete new_node;
-					new_node = CreateLeaf(begin, end);
-					return new_node;
-				}
-			}
+			std::nth_element(begin, begin + size / 2, end, xpos_cmp<T1, T2>);
 		}
 		else
 		{
-			if (!split_y(begin+min_split_size, end, new_node))
-			{
-				if (!split_x(begin+min_split_size, end, new_node))
-				{
-					delete new_node;
-					new_node = CreateLeaf(begin, end);
-					return new_node;
-				}
-			}
+			std::nth_element(begin, begin + size / 2, end, ypos_cmp<T1, T2>);
 		}
+		new_node->left = CreateNode(begin, begin + size / 2, !is_x);
+		new_node->right = CreateNode(begin + size / 2, end, !is_x);
 		return new_node;
 	}
 public:

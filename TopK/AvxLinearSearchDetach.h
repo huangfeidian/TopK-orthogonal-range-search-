@@ -16,10 +16,7 @@ public:
 	{
 		std::sort(input_nodes.begin(), input_nodes.end(), [](const Node<T1, T2>& a, const Node<T1, T2>& b)
 		{
-			if (a.priority > b.priority)
-			{
-				return true;
-			}
+			return a.priority > b.priority;
 		});
 		all_x = reinterpret_cast<T1*>(_mm_malloc(sizeof(T1)*input_nodes.size(), 32));
 		all_y = reinterpret_cast<T1*>(_mm_malloc(sizeof(T1)*input_nodes.size(), 32));

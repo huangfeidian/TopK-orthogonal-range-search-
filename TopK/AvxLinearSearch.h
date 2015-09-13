@@ -179,7 +179,7 @@ std::vector<uint32_t> topk_search_detail<float>(const PackedPos<float>* all_pos,
 	for (uint32_t i = 0; i < size; i++)
 	{
 		__m128 current_node = _mm_load_ps(reinterpret_cast<const float*>(all_pos + i));
-		__m128  cmp_result = _mm_cmp_ps(current_node, searchWindow128, _CMP_LE_OQ);
+		__m128  cmp_result = _mm_cmp_ps(current_node, searchWindow128, _CMP_GT_OQ);
 		if (_mm_testz_ps(cmp_result, cmp_result))
 		{
 			result.push_back(i);
@@ -207,7 +207,7 @@ std::vector<uint32_t> topk_search_detail<double>(const PackedPos<double>* all_po
 	for (uint32_t i = 0; i < size; i++)
 	{
 		__m256d current_node = _mm256_load_pd(reinterpret_cast<const double*>(all_pos + i));
-		__m256d  cmp_result = _mm256_cmp_pd(current_node, searchWindow256, _CMP_LE_OQ);
+		__m256d  cmp_result = _mm256_cmp_pd(current_node, searchWindow256, _CMP_GT_OQ);
 		if (_mm256_testz_pd(cmp_result, cmp_result))
 		{
 			result.push_back(i);

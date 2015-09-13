@@ -17,8 +17,7 @@ public:
 		{
 			return a.priority > b.priority;
 		});
-		void* memory_pool= _mm_malloc(sizeof(T1)*input_nodes.size()*4, 32);
-		all_pos = new(memory_pool) PackedPos<T1>[input_nodes.size()];
+		all_pos= reinterpret_cast<PackedPos<T1>*>(_mm_malloc(sizeof(T1)*input_nodes.size()*4, 32));
 		for (int i = 0; i < input_nodes.size(); i++)
 		{
 			all_pos[i] = PackedPos<T1>(input_nodes[i].pos.x, input_nodes[i].pos.y);

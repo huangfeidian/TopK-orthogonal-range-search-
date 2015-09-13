@@ -22,6 +22,11 @@ public:
 
 };
 template <typename T>
+bool operator==(const Position<T>& a, const Position<T>& b)
+{
+	return a.x == b.x&&a.y == b.y;
+}
+template <typename T>
 bool xpos_cmp(const Position<T>& a, const Position<T>& b)
 {
 	return a.x < b.x;
@@ -70,6 +75,11 @@ public:
 		return priority == a.priority&&pos == a.pos;
 	}
 };
+template <typename T1, typename T2>
+bool operator==(const Node<T1, T2>& a, const Node<T1, T2>& b)
+{
+	return a.pos == b.pos&&a.priority == b.priority;
+}
 template <typename T1, typename T2>
 class PriorityCmp
 {

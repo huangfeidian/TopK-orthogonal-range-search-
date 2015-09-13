@@ -21,6 +21,8 @@ private:
 		Node<T1, T2>* local_nodes;
 		Position<T1> lower_bound;
 		Position<T1> upper_bound;
+		Position<T1> local_lower_bound;
+		Position<T1> local_upper_bound;
 		PSTreeNode()
 		{
 
@@ -52,6 +54,12 @@ private:
 		new_node->upper_bound.x = upper_x;
 		new_node->lower_bound.y = lower_y;
 		new_node->upper_bound.y = upper_y;
+
+		new_node->local_lower_bound.x = lower_x;
+		new_node->local_upper_bound.x = upper_x;
+		new_node->local_lower_bound.y = lower_y;
+		new_node->local_upper_bound.y = upper_y;
+
 		std::sort(begin, end, [](const Node<T1, T2>& a, const Node<T1, T2>& b)
 		{
 			return a.priority > b.priority;
@@ -89,6 +97,7 @@ private:
 		new_node->upper_bound.x = upper_x;
 		new_node->lower_bound.y = lower_y;
 		new_node->upper_bound.y = upper_y;
+
 		std::nth_element(begin, begin + min_split_size, end, [](const Node<T1, T2>& a, const Node<T1, T2>& b)
 		{
 			return a.priority > b.priority;
@@ -97,7 +106,21 @@ private:
 		{
 			return a.priority > b.priority;
 		});
-		new_node->max_priority = begin[0].priority;
+
+		upper_x = upper_y = std::numeric_limits<T1>::min();
+		lower_x = lower_y = std::numeric_limits<T1>::max();
+		for (int i = 0; i < min_split_size; i++)
+		{
+			lower_x = lower_x >(begin + i)->pos.x ? (begin + i)->pos.x : lower_x;
+			lower_y = lower_y > (begin + i)->pos.y ? (begin + i)->pos.y : lower_y;
+			upper_x = upper_x > (begin + i)->pos.x ? upper_x : (begin + i)->pos.x;
+			upper_y = upper_y > (begin + i)->pos.y ? upper_y : (begin + i)->pos.y;
+		}
+		new_node->local_lower_bound.x = lower_x;
+		new_node->local_upper_bound.x = upper_x;
+		new_node->local_lower_bound.y = lower_y;
+		new_node->local_upper_bound.y = upper_y;
+
 		begin += min_split_size;
 		size = end - begin;
 		new_node->is_leaf = false;
@@ -150,11 +173,6 @@ public:
 	}
 	void inside_search(uint32_t k, PSTreeNode* cur_node, result_queue_type& result_queue)
 	{
-		if (result_queue.size() == k&&result_queue.top().priority > cur_node->max_priority)
-		{
-			return;
-		}
-
 		for (int i = 0; i < cur_node->size; i++)
 		{
 			if (result_queue.size() == k)
@@ -176,7 +194,7 @@ public:
 			}
 		}
 	}
-	void leaf_search(Position<T1> lower, Position<T1> upper, uint32_t k, PSTreeNode* cur_node, result_queue_type& result_queue)
+	void cross_search(Position<T1> lower, Position<T1> upper, uint32_t k, PSTreeNode* cur_node, result_queue_type& result_queue)
 	{
 		for (int i = 0; i < cur_node->size; i++)
 		{
@@ -207,6 +225,31 @@ public:
 			}
 		}
 	}
+	void local_search(Position<T1> lower, Position<T1> upper, uint32_t k, PSTreeNode* cur_node, result_queue_type& result_queue)
+	{
+		bool range_cross, x_cross, y_cross;
+
+		x_cross = !((cur_node->local_lower_bound.x > upper.x) || (cur_node->local_upper_bound.x < lower.x));
+		y_cross = !((cur_node->local_lower_bound.y > upper.y) || (cur_node->local_upper_bound.y < lower.y));
+		range_cross = x_cross&&y_cross;
+		if (!range_cross)
+		{
+			return;
+		}
+		bool range_inside, x_inside, y_inside;
+		x_inside = ((cur_node->local_lower_bound.x >= lower.x) && (cur_node->local_upper_bound.x <= upper.x));
+		y_inside = ((cur_node->local_lower_bound.y >= lower.y) && (cur_node->local_upper_bound.y <= upper.y));
+		range_inside = x_inside&&y_inside;
+		if (range_inside)
+		{
+			inside_search(k, cur_node, result_queue);
+		}
+		else
+		{
+			cross_search(lower, upper, k, cur_node, result_queue);
+		}
+		
+	}
 	void queue_search(Position<T1> lower, Position<T1> upper, uint32_t k,  result_queue_type& result_queue)
 	{
 		std::queue<PSTreeNode*> query_queue;
@@ -228,18 +271,7 @@ public:
 			{
 				continue;
 			}
-			bool range_inside, x_inside, y_inside;
-			x_inside = ((cur_node->lower_bound.x >= lower.x) && (cur_node->upper_bound.x <= upper.x));
-			y_inside = ((cur_node->lower_bound.y >= lower.y) && (cur_node->upper_bound.y <= upper.y));
-			range_inside = x_inside&&y_inside;
-			if (range_inside)
-			{
-				inside_search(k, cur_node, result_queue);
-			}
-			else
-			{
-				leaf_search(lower, upper, k, cur_node, result_queue);
-			}
+			local_search(lower, upper, k, cur_node, result_queue);
 			if (cur_node->left)
 			{
 				query_queue.push(cur_node->left);
